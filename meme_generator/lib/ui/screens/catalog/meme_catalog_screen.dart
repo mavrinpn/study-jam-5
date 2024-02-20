@@ -1,53 +1,61 @@
 import 'package:flutter/material.dart';
 import 'package:meme_generator/core/strings.dart';
+import 'package:meme_generator/data/data_service.dart';
+import 'package:meme_generator/models/template.dart';
+import 'package:meme_generator/ui/widgets/meme_template_card.dart';
 
-class MemeCatalogScreen extends StatelessWidget {
+class MemeCatalogScreen extends StatefulWidget {
   const MemeCatalogScreen({Key? key}) : super(key: key);
+
+  @override
+  State<MemeCatalogScreen> createState() => _MemeCatalogScreenState();
+}
+
+class _MemeCatalogScreenState extends State<MemeCatalogScreen> {
+  List<Template> templates = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  void _loadData() {
+    MockDataService.loadTemplates().then((value) {
+      setState(() {
+        templates = value;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text(Strings.catalogScreenTitle),
-      ),
-      body: ListView(
-        children: const [
-          _MemeTemplateCard(id: '1'),
-          _MemeTemplateCard(id: '2'),
-          _MemeTemplateCard(id: '3'),
+        actions: [
+          IconButton(
+            onPressed: _addButtonAction,
+            icon: const Icon(Icons.add),
+          ),
         ],
       ),
-    );
-  }
-}
-
-class _MemeTemplateCard extends StatelessWidget {
-  final String id;
-  const _MemeTemplateCard({
-    Key? key,
-    required this.id,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return InkWell(
-      onTap: () => _onTap(context),
-      child: Card(
-        clipBehavior: Clip.hardEdge,
-        child: AspectRatio(
-          aspectRatio: 1.0,
-          child: Container(
-            color: theme.primaryColor,
-            child: Center(child: Text(id)),
-          ),
+      body: SafeArea(
+        child: ListView.builder(
+          clipBehavior: Clip.none,
+          padding: const EdgeInsets.all(8),
+          itemCount: templates.length,
+          itemBuilder: (context, index) {
+            return MemeTemplateCard(template: templates[index]);
+          },
         ),
       ),
     );
   }
 
-  void _onTap(BuildContext context) {
-    Navigator.of(context).pushNamed('/generator');
+  void _addButtonAction() {
+    Navigator.of(context).pushNamed('/creator').then((value) {
+      _loadData();
+    });
   }
 }

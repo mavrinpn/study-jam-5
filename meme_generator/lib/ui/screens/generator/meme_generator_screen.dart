@@ -5,14 +5,19 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:meme_generator/core/strings.dart';
+import 'package:meme_generator/models/template.dart';
 import 'package:meme_generator/ui/dialogs/error_dialog.dart';
-import 'package:meme_generator/ui/widgets/demotivator_create_widget.dart';
+import 'package:meme_generator/ui/widgets/demotivator_generate_widget.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 class MemeGeneratorScreen extends StatelessWidget {
-  MemeGeneratorScreen({Key? key}) : super(key: key);
+  MemeGeneratorScreen({
+    Key? key,
+    required this.template,
+  }) : super(key: key);
 
+  final Template template;
   final GlobalKey repaintBoundaryGlobalKey = GlobalKey();
 
   @override
@@ -30,8 +35,12 @@ class MemeGeneratorScreen extends StatelessWidget {
       backgroundColor: Colors.black,
       body: SafeArea(
         child: Center(
-          child: DemotivatorCreateWidget(
-            repaintBoundaryGlobalKey: repaintBoundaryGlobalKey,
+          child: SingleChildScrollView(
+            clipBehavior: Clip.none,
+            child: DemotivatorGenerateWidget(
+              template: template,
+              repaintBoundaryGlobalKey: repaintBoundaryGlobalKey,
+            ),
           ),
         ),
       ),

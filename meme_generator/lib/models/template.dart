@@ -1,23 +1,62 @@
-class Part {}
+import 'package:hive/hive.dart';
+import 'package:meme_generator/models/section.dart';
 
-class TextCaption extends Part {
-  final String fontFamily;
-  final double fontSize;
+class Template extends HiveObject {
+  String name;
 
-  TextCaption({
-    required this.fontFamily,
-    required this.fontSize,
+  final List<Section> sections;
+
+  Template({
+    required this.name,
+    required this.sections,
   });
-}
 
-class Image extends Part {
-  final double aspectRatio;
+  Map<String, dynamic> toMap() => <String, dynamic>{
+        'name': name,
+        'sections': sections.map((e) => e.toMap()).toList(),
+      };
 
-  Image({required this.aspectRatio});
-}
+  factory Template.fromMap(Map<String, dynamic> json) => Template(
+        name: json['name'],
+        sections: json['sections'] != null
+            ? _sectionsFromList(List<dynamic>.from(json['sections']))
+            : [],
+      );
 
-class Template {
-  final List<Part> parts;
+  static List<Section> _sectionsFromList(List<dynamic> list) {
+    List<Section> result = [];
+    for (var row in list) {
+      final json = Map<String, dynamic>.from(row);
+      final type = json['type'] ?? '';
 
-  Template({required this.parts});
+      switch (type) {
+        case 'title':
+          result.add(TitleSection(
+            fontFamily: json['fontFamily'] ?? '',
+            fontSize: json['fontSize'] != null
+                ? double.tryParse('${json['fontSize']}') ?? 40.0
+                : 40.0,
+          ));
+          break;
+        case 'caption':
+          result.add(CaptionSection(
+            fontFamily: json['fontFamily'] ?? '',
+            fontSize: json['fontSize'] != null
+                ? double.tryParse('${json['fontSize']}') ?? 40.0
+                : 40.0,
+          ));
+          break;
+        case 'image':
+          result.add(ImageSection(
+            aspectRatio: json['aspectRatio'] != null
+                ? double.tryParse('${json['aspectRatio']}') ?? 1.0
+                : 1.0,
+          ));
+          break;
+        default:
+      }
+    }
+
+    return result;
+  }
 }

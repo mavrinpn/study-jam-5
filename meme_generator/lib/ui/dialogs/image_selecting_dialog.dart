@@ -80,6 +80,15 @@ Image _imageFromURL(String url) {
   return Image.network(
     url,
     fit: BoxFit.cover,
+    errorBuilder: (context, error, stackTrace) {
+      return Center(
+        child: Text(
+          error.toString(),
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.white),
+        ),
+      );
+    },
     loadingBuilder:
         (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
       if (loadingProgress == null) return child;

@@ -2,25 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:meme_generator/core/strings.dart';
 import 'package:meme_generator/models/section.dart';
 import 'package:meme_generator/models/template.dart';
-import 'package:meme_generator/ui/dialogs/image_aspect_ratio_dialog.dart';
+import 'package:meme_generator/ui/dialogs/image_selecting_dialog.dart';
+import 'package:meme_generator/ui/dialogs/text_editing_dialog.dart';
 
-class DemotivatorCreateWidget extends StatefulWidget {
-  const DemotivatorCreateWidget({
+class DemotivatorGenerateWidget extends StatefulWidget {
+  const DemotivatorGenerateWidget({
     Key? key,
     required this.template,
-    required this.onTemplateChanged,
+    required this.repaintBoundaryGlobalKey,
   }) : super(key: key);
 
   final Template template;
-  final Function(Template template) onTemplateChanged;
+  final GlobalKey<State<StatefulWidget>> repaintBoundaryGlobalKey;
 
   @override
-  State<DemotivatorCreateWidget> createState() =>
+  State<DemotivatorGenerateWidget> createState() =>
       _DemotivatorGenerateWidgetState();
 }
 
-class _DemotivatorGenerateWidgetState extends State<DemotivatorCreateWidget> {
-  late Template template;
+class _DemotivatorGenerateWidgetState extends State<DemotivatorGenerateWidget> {
+  Map<int, String> titles = {};
+  Map<int, String> captions = {};
+  Image? image;
 
   final decoration = BoxDecoration(
     color: Colors.black,
@@ -31,41 +34,22 @@ class _DemotivatorGenerateWidgetState extends State<DemotivatorCreateWidget> {
   );
 
   @override
-  void initState() {
-    template = widget.template;
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: DecoratedBox(
-        decoration: decoration,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 20,
-          ),
-          child: Theme(
-            data: Theme.of(context).copyWith(
-              canvasColor: Colors.transparent,
-              shadowColor: Colors.transparent,
+      child: RepaintBoundary(
+        key: widget.repaintBoundaryGlobalKey,
+        child: DecoratedBox(
+          decoration: decoration,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 20,
             ),
-            child: ReorderableListView(
-              physics: const ClampingScrollPhysics(),
-              shrinkWrap: true,
-              onReorder: (oldIndex, newIndex) {
-                if (newIndex > oldIndex) {
-                  newIndex -= 1;
-                }
-                final items = template.sections.removeAt(oldIndex);
-                template.sections.insert(newIndex, items);
-                widget.onTemplateChanged(template);
-              },
-              children: [
-                ..._buildTemplate(widget.template),
-              ],
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: _buildTemplate(widget.template),
             ),
           ),
         ),
@@ -78,14 +62,14 @@ class _DemotivatorGenerateWidgetState extends State<DemotivatorCreateWidget> {
       switch (section.runtimeType) {
         case TitleSection:
           final textSection = section as TitleSection;
+          final text = titles[section.hashCode] ?? Strings.title;
           return GestureDetector(
-            key: ObjectKey(section),
-            onTap: () => _onTitleTap(),
+            onTap: () => _onTitleTap(section.hashCode),
             child: Padding(
               padding:
                   const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8),
               child: Text(
-                Strings.title,
+                text != '' ? text : Strings.title,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontFamily: textSection.fontFamily,
@@ -97,14 +81,14 @@ class _DemotivatorGenerateWidgetState extends State<DemotivatorCreateWidget> {
           );
         case CaptionSection:
           final textSection = section as CaptionSection;
+          final text = captions[section.hashCode] ?? Strings.caption;
           return GestureDetector(
-            key: ObjectKey(section),
-            onTap: () => _onCaptionTap(),
+            onTap: () => _onCaptionTap(section.hashCode),
             child: Padding(
               padding:
                   const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8),
               child: Text(
-                Strings.caption,
+                text != '' ? text : Strings.caption,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontFamily: textSection.fontFamily,
@@ -117,15 +101,14 @@ class _DemotivatorGenerateWidgetState extends State<DemotivatorCreateWidget> {
         case ImageSection:
           final imageSection = section as ImageSection;
           return GestureDetector(
-            key: ObjectKey(section),
             onTap: _onImageTap,
             child: AspectRatio(
               aspectRatio: imageSection.aspectRatio,
               child: DecoratedBox(
                 decoration: decoration,
-                child: const Padding(
-                  padding: EdgeInsets.all(4.0),
-                  child: Placeholder(),
+                child: Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: image,
                 ),
               ),
             ),
@@ -137,21 +120,40 @@ class _DemotivatorGenerateWidgetState extends State<DemotivatorCreateWidget> {
     }).toList();
   }
 
-  void _onTitleTap() {
-    //TODO set title text sty;e
+  void _onTitleTap(int sectionHash) {
+    showTextEditingModal(
+      context: context,
+      title: Strings.title,
+      text: titles[sectionHash] ?? '',
+    ).then((value) {
+      if (value != null) {
+        setState(() {
+          titles[sectionHash] = value;
+        });
+      }
+    });
   }
 
-  void _onCaptionTap() {
-    //TODO set caption text sty;e
+  void _onCaptionTap(int sectionHash) {
+    showTextEditingModal(
+      context: context,
+      title: Strings.caption,
+      text: captions[sectionHash] ?? '',
+    ).then((value) {
+      if (value != null) {
+        setState(() {
+          captions[sectionHash] = value;
+        });
+      }
+    });
   }
 
   void _onImageTap() {
-    showImageAspectRatioModal(context: context).then((value) {
+    showImageSelectingModal(context: context).then((value) {
       if (value != null) {
-        ImageSection imageSection = template.sections
-            .firstWhere((element) => element is ImageSection) as ImageSection;
-        imageSection.aspectRatio = value;
-        widget.onTemplateChanged(template);
+        setState(() {
+          image = value;
+        });
       }
     });
   }
