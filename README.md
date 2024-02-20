@@ -11,7 +11,7 @@
 
 Список шаблонов хранится в базе данных Hive. Если это первый запуск приложения и в базе пусто, то в базу сохранится преднастроенные шаблоны.
 
-![Meme](https://github.com/mavrinpn/study-jam-5/raw/study-jam-5/docs/images/1.png)
+![Meme](https://github.com/mavrinpn/study-jam-5/raw/main/docs/images/1.png)
 
 
 # Экран создания нового шаблона
