@@ -9,7 +9,7 @@ Future<double?> showImageAspectRatioModal({
     builder: (BuildContext context) => AlertDialog(
       contentPadding: const EdgeInsets.all(20),
       title: const Text(
-        'Aspect Ratio',
+        Strings.aspectRatio,
         textAlign: TextAlign.center,
       ),
       content: SizedBox(

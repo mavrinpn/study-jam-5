@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:meme_generator/core/strings.dart';
-import 'package:meme_generator/data/data_service.dart';
+import 'package:meme_generator/data/mock_data_service.dart';
 import 'package:meme_generator/models/template.dart';
 import 'package:meme_generator/ui/widgets/meme_template_card.dart';
 

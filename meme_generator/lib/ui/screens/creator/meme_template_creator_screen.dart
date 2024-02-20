@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:meme_generator/core/strings.dart';
-import 'package:meme_generator/data/data_service.dart';
+import 'package:meme_generator/data/mock_data_service.dart';
 import 'package:meme_generator/models/section.dart';
 import 'package:meme_generator/models/template.dart';
 import 'package:meme_generator/ui/dialogs/text_editing_dialog.dart';
@@ -39,8 +39,10 @@ class _MemeTemplateCreatorScreenState extends State<MemeTemplateCreatorScreen> {
                     });
                   },
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 6,
+                  alignment: WrapAlignment.center,
                   children: [
                     FilledButton(
                         onPressed: _onAddTitle,
@@ -48,25 +50,11 @@ class _MemeTemplateCreatorScreenState extends State<MemeTemplateCreatorScreen> {
                     FilledButton(
                         onPressed: _onAddCaption,
                         child: const Text(Strings.addCaption)),
+                    FilledButton(
+                        onPressed: _onSave,
+                        child: const Text(Strings.saveTemplateButton)),
                   ],
                 ),
-                FilledButton(
-                    onPressed: () {
-                      showTextEditingModal(
-                        context: context,
-                        title: Strings.name,
-                        text: Strings.newTemplate,
-                      ).then((value) {
-                        if (value != null) {
-                          template.name =
-                              value != '' ? value : Strings.newTemplate;
-                          MockDataService.putTemplate(template).then((value) {
-                            Navigator.of(context).pop();
-                          });
-                        }
-                      });
-                    },
-                    child: const Text(Strings.saveTemplateButton)),
               ],
             ),
           ),
@@ -83,5 +71,20 @@ class _MemeTemplateCreatorScreenState extends State<MemeTemplateCreatorScreen> {
   void _onAddTitle() {
     template.sections.add(TitleSection(fontFamily: 'Impact', fontSize: 40));
     setState(() {});
+  }
+
+  void _onSave() {
+    showTextEditingModal(
+      context: context,
+      title: Strings.name,
+      text: Strings.newTemplate,
+    ).then((value) {
+      if (value != null) {
+        template.name = value != '' ? value : Strings.newTemplate;
+        MockDataService.putTemplate(template).then((value) {
+          Navigator.of(context).pop();
+        });
+      }
+    });
   }
 }

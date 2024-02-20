@@ -10,6 +10,7 @@ class Strings {
   static const caption = 'Подпись';
 
   static const image = 'Картинка';
+  static const aspectRatio = 'Соотношение сторон';
   static const selectFromGallery = 'Выбрать из галереи';
   static const downloadFromInternet = 'Скачать из Интернета';
 
